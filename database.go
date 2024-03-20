@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 )
 
 type Database struct {
@@ -256,4 +257,67 @@ type designDocument struct {
 type ViewDefinition struct {
 	Map    string `json:"map"`
 	Reduce string `json:"reduce,omitempty"`
+}
+
+// ViewResponse defines a struct to represent the response JSON object returned from a database view.
+type ViewResponse struct {
+	Offset    int   `json:"offset"`     // Offset where the document list started
+	Rows      []any `json:"rows"`       // Array of view row objects
+	TotalRows int   `json:"total_rows"` // Number of documents in the database/view
+	UpdateSeq any   `json:"update_seq"` // Current update sequence for the database
+}
+
+// View performs a query on a database view with the specified design, view, and parameters.
+// It returns a ViewResponse representing the response from the view query.
+func (db *Database) View(ctx context.Context, design, view string, params ViewParams) (ViewResponse, error) {
+	code, responseBytes, err := db.httpClient.Get(ctx, fmt.Sprintf("%s/_design/%s/_view/%s?%s", db.dbName, design, view, params.encode()))
+	if err != nil {
+		return ViewResponse{}, fmt.Errorf("error creating design doc: %w", err)
+	}
+
+	if code != 200 {
+		return ViewResponse{}, fmt.Errorf("error getting view: %d - %s", code, string(responseBytes))
+	}
+
+	var response ViewResponse
+	err = json.Unmarshal(responseBytes, &response)
+	if err != nil {
+		return ViewResponse{}, fmt.Errorf("error unmarshalling view response: %w", err)
+	}
+
+	return response, nil
+}
+
+// ViewParams defines a struct to represent the parameters for querying a database view.
+type ViewParams struct {
+	Conflicts       bool   `json:"conflicts,omitempty"`
+	Descending      bool   `json:"descending,omitempty"`
+	EndKey          string `json:"endkey,omitempty"`
+	EndKeyDocID     string `json:"endkey_docid,omitempty"`
+	Group           bool   `json:"group,omitempty"`
+	GroupLevel      int    `json:"group_level,omitempty"`
+	IncludeDocs     bool   `json:"include_docs,omitempty"`
+	Attachments     bool   `json:"attachments,omitempty"`
+	AttEncodingInfo bool   `json:"att_encoding_info,omitempty"`
+	InclusiveEnd    bool   `json:"inclusive_end,omitempty"`
+	Key             string `json:"key,omitempty"`
+	Keys            string `json:"keys,omitempty"`
+	Limit           int    `json:"limit,omitempty"`
+	Reduce          bool   `json:"reduce,omitempty"`
+	Skip            int    `json:"skip,omitempty"`
+	Sorted          bool   `json:"sorted,omitempty"`
+	Stable          bool   `json:"stable,omitempty"`
+	Stale           string `json:"stale,omitempty"`
+	StartKey        string `json:"startkey,omitempty"`
+	StartKeyDocID   string `json:"startkey_docid,omitempty"`
+	Update          string `json:"update,omitempty"`
+	UpdateSeq       bool   `json:"update_seq,omitempty"`
+}
+
+// encode converts ViewParams struct to URL-encoded string
+func (q *ViewParams) encode() string {
+	v := url.Values{}
+	b, _ := json.Marshal(q)
+	_ = json.Unmarshal(b, &v)
+	return v.Encode()
 }
