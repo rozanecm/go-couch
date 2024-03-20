@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"reflect"
 )
 
 type Database struct {
@@ -269,23 +270,69 @@ type ViewResponse struct {
 
 // View performs a query on a database view with the specified design, view, and parameters.
 // It returns a ViewResponse representing the response from the view query.
-func (db *Database) View(ctx context.Context, design, view string, params ViewParams) (ViewResponse, error) {
+//
+// Parameters:
+//   - ctx: The context for the HTTP request.
+//   - design: The design document name.
+//   - view: The name of the view within the design document.
+//   - params: The parameters for the view query.
+//   - viewResults: A pointer to a struct where the view results will be unmarshalled.
+//     The struct must have a "rows" field holding a slice of structs with "id" and "key" JSON fields.
+//     If params.IncludeDocs is true, the struct must also have a "doc" JSON field.
+//
+// Returns:
+//   - error: An error if the view query fails or if the viewResults struct does not meet the requirements.
+func (db *Database) View(ctx context.Context, design, view string, params ViewParams, resultVar interface{}) error {
+	err := CheckStructForJSONFields(resultVar)
+	if err != nil {
+		return fmt.Errorf("error checking struct for JSON fields: %w", err)
+	}
+
 	code, responseBytes, err := db.httpClient.Get(ctx, fmt.Sprintf("%s/_design/%s/_view/%s?%s", db.dbName, design, view, params.encode()))
 	if err != nil {
-		return ViewResponse{}, fmt.Errorf("error creating design doc: %w", err)
+		return fmt.Errorf("error creating design doc: %w", err)
 	}
 
 	if code != 200 {
-		return ViewResponse{}, fmt.Errorf("error getting view: %d - %s", code, string(responseBytes))
+		return fmt.Errorf("error getting view: %d - %s", code, string(responseBytes))
 	}
 
-	var response ViewResponse
-	err = json.Unmarshal(responseBytes, &response)
+	// Unmarshal directly into the provided variable
+	err = json.Unmarshal(responseBytes, resultVar)
 	if err != nil {
-		return ViewResponse{}, fmt.Errorf("error unmarshalling view response: %w", err)
+		return fmt.Errorf("error unmarshalling into resultVar: %w", err)
 	}
 
-	return response, nil
+	return nil
+}
+
+// CheckStructForJSONFields checks if the provided struct has the required JSON fields.
+// It returns an error if the struct does not meet the criteria.
+func CheckStructForJSONFields(resultVar interface{}) error {
+	// Get the type of the struct pointed to by resultVar
+	structType := reflect.TypeOf(resultVar).Elem()
+
+	// Check if the 'Rows' field exists and is of type slice with the expected JSON tag
+	rowsField, found := structType.FieldByName("Rows")
+	if !found || rowsField.Type.Kind() != reflect.Slice || rowsField.Tag.Get("json") != "rows" {
+		return fmt.Errorf("resultVar must be a pointer to a struct with a 'Rows' field of type slice and JSON tag 'rows'")
+	}
+
+	// Check if 'id' and 'key' fields exist and have the expected JSON tags
+	idField, idFound := structType.FieldByName("ID")
+	keyField, keyFound := structType.FieldByName("Key")
+	if !idFound || !keyFound || idField.Tag.Get("json") != "id" || keyField.Tag.Get("json") != "key" {
+		return fmt.Errorf("resultVar must have 'ID' and 'Key' fields with JSON tags 'id' and 'key'")
+	}
+
+	// Check if 'doc' field is required and present with the expected JSON tag
+	if docField, docFound := structType.FieldByName("Doc"); docFound {
+		if docField.Tag.Get("json") != "doc" {
+			return fmt.Errorf("resultVar must have a 'Doc' field with JSON tag 'doc' when IncludeDocs is true")
+		}
+	}
+
+	return nil
 }
 
 // ViewParams defines a struct to represent the parameters for querying a database view.
