@@ -15,6 +15,8 @@ type CouchService struct {
 }
 
 func GetInstance(baseURL, username, password string) CouchServiceI {
+	baseURL = addSlashIfNeeded(baseURL)
+
 	if !isValidURLScheme(baseURL) {
 		panic("invalid url scheme")
 	}
