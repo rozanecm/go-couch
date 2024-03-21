@@ -65,7 +65,7 @@ func TestCheckStructForJSONFields(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			err := CheckStructForJSONFields(tc.Input)
+			err := checkStructForJSONFields(tc.Input)
 			if (err != nil) != tc.ShouldErr {
 				t.Errorf("Expected error: %v, Got error: %v", tc.ShouldErr, err)
 			}

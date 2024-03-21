@@ -261,6 +261,7 @@ type ViewDefinition struct {
 }
 
 // ViewResponse defines a struct to represent the response JSON object returned from a database view.
+// This struct can be used as a generic resultVar in the View function of the Database type.
 type ViewResponse struct {
 	Offset    int   `json:"offset"`     // Offset where the document list started
 	Rows      []any `json:"rows"`       // Array of view row objects
@@ -269,7 +270,6 @@ type ViewResponse struct {
 }
 
 // View performs a query on a database view with the specified design, view, and parameters.
-// It returns a ViewResponse representing the response from the view query.
 //
 // Parameters:
 //   - ctx: The context for the HTTP request.
@@ -283,7 +283,7 @@ type ViewResponse struct {
 // Returns:
 //   - error: An error if the view query fails or if the viewResults struct does not meet the requirements.
 func (db *Database) View(ctx context.Context, design, view string, params ViewParams, resultVar interface{}) error {
-	err := CheckStructForJSONFields(resultVar)
+	err := checkStructForJSONFields(resultVar)
 	if err != nil {
 		return fmt.Errorf("error checking struct for JSON fields: %w", err)
 	}
@@ -306,9 +306,9 @@ func (db *Database) View(ctx context.Context, design, view string, params ViewPa
 	return nil
 }
 
-// CheckStructForJSONFields checks if the provided struct has the required JSON fields.
+// checkStructForJSONFields checks if the provided struct has the required JSON fields.
 // It returns an error if the struct does not meet the criteria.
-func CheckStructForJSONFields(resultVar interface{}) error {
+func checkStructForJSONFields(resultVar interface{}) error {
 	// Get the type of the struct pointed to by resultVar
 	structType := reflect.TypeOf(resultVar).Elem()
 

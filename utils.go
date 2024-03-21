@@ -2,6 +2,9 @@ package couchdb
 
 import (
 	"errors"
+	"fmt"
+	"net/http"
+	"net/url"
 	"reflect"
 	"regexp"
 )
@@ -86,4 +89,49 @@ func isValidParam(param interface{}) bool {
 	default:
 		return false
 	}
+}
+
+// isValidURLScheme checks if a given string represents a valid URL scheme.
+func isValidURLScheme(s string) bool {
+	parsedURL, err := url.Parse(s)
+	if err != nil || parsedURL.Scheme == "" {
+		return false
+	}
+	return true
+}
+
+// formAuthenticatedURL forms a URL with the provided base URL, username, and password.
+// It returns the formatted URL string.
+func formAuthenticatedURL(baseURL, username, password string) (string, error) {
+	// Parse the base URL to ensure it's valid
+	parsedURL, err := url.Parse(baseURL)
+	if err != nil {
+		return "", fmt.Errorf("error parsing base URL: %w", err)
+	}
+
+	// Add username and password to the URL
+	if username != "" && password != "" {
+		parsedURL.User = url.UserPassword(username, password)
+	}
+
+	authURL := parsedURL.String()
+	return authURL, nil
+}
+
+// testURLWithHEAD sends a HEAD request to the specified URL and checks the response status code.
+// It returns true if the response status code is within the 200-299 range, indicating a successful request.
+func testURLWithHEAD(url string) error {
+	// Send a HEAD request to the URL
+	resp, err := http.Head(url)
+	if err != nil {
+		return fmt.Errorf("error sending HEAD request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check the response status code
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		return nil
+	}
+
+	return errors.New("invalid response status code")
 }
