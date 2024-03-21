@@ -306,29 +306,32 @@ func (db *Database) View(ctx context.Context, design, view string, params ViewPa
 	return nil
 }
 
-// checkStructForJSONFields checks if the provided struct has the required JSON fields.
-// It returns an error if the struct does not meet the criteria.
+// checkStructForJSONFields checks if the provided struct has the required JSON fields in each element of the 'Rows' slice.
+// It returns an error if the struct or its elements do not meet the criteria.
 func checkStructForJSONFields(resultVar interface{}) error {
 	// Get the type of the struct pointed to by resultVar
 	structType := reflect.TypeOf(resultVar).Elem()
 
-	// Check if the 'Rows' field exists and is of type slice with the expected JSON tag
+	// Check if 'Rows' field exists and is of type slice with the expected JSON tag
 	rowsField, found := structType.FieldByName("Rows")
 	if !found || rowsField.Type.Kind() != reflect.Slice || rowsField.Tag.Get("json") != "rows" {
 		return fmt.Errorf("resultVar must be a pointer to a struct with a 'Rows' field of type slice and JSON tag 'rows'")
 	}
 
-	// Check if 'id' and 'key' fields exist and have the expected JSON tags
-	idField, idFound := structType.FieldByName("ID")
-	keyField, keyFound := structType.FieldByName("Key")
+	// Get the type of elements in the 'Rows' slice
+	rowType := rowsField.Type.Elem()
+
+	// Check if each element in 'Rows' has 'ID' and 'Key' fields with the expected JSON tags
+	idField, idFound := rowType.FieldByName("ID")
+	keyField, keyFound := rowType.FieldByName("Key")
 	if !idFound || !keyFound || idField.Tag.Get("json") != "id" || keyField.Tag.Get("json") != "key" {
-		return fmt.Errorf("resultVar must have 'ID' and 'Key' fields with JSON tags 'id' and 'key'")
+		return fmt.Errorf("each element in 'Rows' slice must have 'ID' and 'Key' fields with JSON tags 'id' and 'key'")
 	}
 
-	// Check if 'doc' field is required and present with the expected JSON tag
-	if docField, docFound := structType.FieldByName("Doc"); docFound {
+	// Check if 'Doc' field is required and present with the expected JSON tag in each element of 'Rows' slice
+	if docField, docFound := rowType.FieldByName("Doc"); docFound {
 		if docField.Tag.Get("json") != "doc" {
-			return fmt.Errorf("resultVar must have a 'Doc' field with JSON tag 'doc' when IncludeDocs is true")
+			return fmt.Errorf("each element in 'Rows' slice must have a 'Doc' field with JSON tag 'doc' when IncludeDocs is true")
 		}
 	}
 

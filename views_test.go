@@ -76,10 +76,11 @@ func TestCheckStructForJSONFields(t *testing.T) {
 // Define sample structs for testing
 
 type validStruct struct {
-	Rows []int    `json:"rows"`
-	ID   string   `json:"id"`
-	Key  string   `json:"key"`
-	Doc  struct{} `json:"doc"`
+	Rows []struct {
+		ID  string   `json:"id"`
+		Key string   `json:"key"`
+		Doc struct{} `json:"doc"`
+	} `json:"rows"`
 }
 
 type missingRowsStruct struct {
@@ -96,50 +97,55 @@ type wrongTypeRowsStruct struct {
 }
 
 type missingRowsTagStruct struct {
-	Rows []int
-	ID   string   `json:"id"`
-	Key  string   `json:"key"`
-	Doc  struct{} `json:"doc"`
+	Rows []struct {
+		ID  string   `json:"id"`
+		Key string   `json:"key"`
+		Doc struct{} `json:"doc"`
+	}
 }
 
 type missingIDStruct struct {
-	Rows []int    `json:"rows"`
-	Key  string   `json:"key"`
-	Doc  struct{} `json:"doc"`
+	Rows []struct {
+		Key string   `json:"key"`
+		Doc struct{} `json:"doc"`
+	} `json:"rows"`
 }
 
 type missingKeyStruct struct {
-	Rows []int    `json:"rows"`
-	ID   string   `json:"id"`
-	Doc  struct{} `json:"doc"`
+	Rows []struct {
+		ID  string   `json:"id"`
+		Doc struct{} `json:"doc"`
+	} `json:"rows"`
 }
 
 type missingIDTagStruct struct {
-	Rows []int `json:"rows"`
-	ID   string
-	Key  string   `json:"key"`
-	Doc  struct{} `json:"doc"`
+	Rows []struct {
+		ID  string
+		Key string   `json:"key"`
+		Doc struct{} `json:"doc"`
+	} `json:"rows"`
 }
 
 type missingKeyTagStruct struct {
-	Rows []int  `json:"rows"`
-	ID   string `json:"id"`
-	Key  string
-	Doc  struct{} `json:"doc"`
+	Rows []struct {
+		ID  string `json:"id"`
+		Key string
+		Doc struct{} `json:"doc"`
+	} `json:"rows"`
 }
 
 type validDocStruct struct {
-	Rows        []int    `json:"rows"`
-	ID          string   `json:"id"`
-	Key         string   `json:"key"`
-	Doc         struct{} `json:"doc"`
-	IncludeDocs bool     `json:"include_docs"`
+	Rows []struct {
+		ID  string   `json:"id"`
+		Key string   `json:"key"`
+		Doc struct{} `json:"doc"`
+	} `json:"rows"`
 }
 
 type missingDocTagStruct struct {
-	Rows        []int    `json:"rows"`
-	ID          string   `json:"id"`
-	Key         string   `json:"key"`
-	Doc         struct{} `json:"dock"`
-	IncludeDocs bool
+	Rows []struct {
+		ID  string   `json:"id"`
+		Key string   `json:"key"`
+		Doc struct{} `json:"dock"`
+	} `json:"rows"`
 }
