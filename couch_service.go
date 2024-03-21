@@ -14,10 +14,24 @@ type CouchService struct {
 	baseURL string
 }
 
-func GetInstance(baseURL string) CouchServiceI {
-	cs := &CouchService{
-		baseURL: baseURL,
+func GetInstance(baseURL, username, password string) CouchServiceI {
+	if !isValidURLScheme(baseURL) {
+		panic("invalid url scheme")
 	}
+
+	authenticatedURL, err := formAuthenticatedURL(baseURL, username, password)
+	if err != nil {
+		panic(err)
+	}
+
+	if err = testURLWithHEAD(authenticatedURL); err != nil {
+		panic(err)
+	}
+
+	cs := &CouchService{
+		baseURL: authenticatedURL,
+	}
+
 	return cs
 }
 
