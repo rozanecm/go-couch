@@ -2,6 +2,7 @@ package couchdb
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -113,6 +114,29 @@ func TestIsValidParam(t *testing.T) {
 			result := isValidParam(test.param)
 			if result != test.expected {
 				t.Errorf("Expected %t, got %t", test.expected, result)
+			}
+		})
+	}
+}
+
+func TestAddSlashIfNeeded(t *testing.T) {
+	testCases := []struct {
+		input    string
+		expected string
+	}{
+		{"https://example.com/api/", "https://example.com/api/"},
+		{"https://example.com/api", "https://example.com/api/"},
+		{"", "/"},
+		{"/", "/"},
+		{"test/", "test/"},
+		{"test", "test/"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("Input: %s", tc.input), func(t *testing.T) {
+			output := addSlashIfNeeded(tc.input)
+			if output != tc.expected {
+				t.Errorf("Expected: %s, Got: %s", tc.expected, output)
 			}
 		})
 	}

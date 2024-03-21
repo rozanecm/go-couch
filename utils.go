@@ -135,3 +135,12 @@ func testURLWithHEAD(url string) error {
 
 	return errors.New("invalid response status code")
 }
+
+// addSlashIfNeeded checks if the last character of a string is a slash '/' and adds it if it's not present.
+// If the input string is empty or already ends with a slash, it returns the input string as is.
+func addSlashIfNeeded(s string) string {
+	if len(s) == 0 || s[len(s)-1] != '/' {
+		return s + "/"
+	}
+	return s
+}
