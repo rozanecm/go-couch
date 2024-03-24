@@ -10,6 +10,18 @@
 Welcome to the Go SDK for interacting with CouchDB services. This SDK provides a convenient way to manage
 databases, documents, and design documents using Go programming language.
 
+<div style="background-color: #ffffcc; padding: 10px; border-radius: 5px;">
+
+⚠️ **Warning: Breaking Changes and Testing Status**
+
+Please note that this project is under active development and testing. As a result, breaking changes may occur between versions. While we strive for stability and reliability, we cannot guarantee error-free execution in all scenarios.
+
+We recommend reviewing the release notes and testing updates in a controlled environment before deploying this project in a production setting.
+
+Thank you for your understanding and collaboration.
+</div>
+
+
 ## Features
 
 - **Database Management**: Create, retrieve, update, and delete databases.

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 	"reflect"
 )
 
@@ -275,20 +274,20 @@ type ViewResponse struct {
 //   - ctx: The context for the HTTP request.
 //   - design: The design document name.
 //   - view: The name of the view within the design document.
-//   - params: The parameters for the view query.
+//   - params: The parameters for the view query as described [here](https://docs.couchdb.org/en/stable/api/ddoc/views.html#db-design-design-doc-view-view-name).
 //   - viewResults: A pointer to a struct where the view results will be unmarshalled.
 //     The struct must have a "rows" field holding a slice of structs with "id" and "key" JSON fields.
 //     If params.IncludeDocs is true, the struct must also have a "doc" JSON field.
 //
 // Returns:
 //   - error: An error if the view query fails or if the viewResults struct does not meet the requirements.
-func (db *Database) View(ctx context.Context, design, view string, params ViewParams, resultVar interface{}) error {
+func (db *Database) View(ctx context.Context, design, view string, params map[string]any, resultVar interface{}) error {
 	err := checkStructForJSONFields(resultVar)
 	if err != nil {
 		return fmt.Errorf("error checking struct for JSON fields: %w", err)
 	}
 
-	code, responseBytes, err := db.httpClient.Get(ctx, fmt.Sprintf("%s/_design/%s/_view/%s?%s", db.dbName, design, view, params.encode()))
+	code, responseBytes, err := db.httpClient.Get(ctx, fmt.Sprintf("%s/_design/%s/_view/%s?%s", db.dbName, design, view, "params.encode()"))
 	if err != nil {
 		return fmt.Errorf("error creating design doc: %w", err)
 	}
@@ -336,38 +335,4 @@ func checkStructForJSONFields(resultVar interface{}) error {
 	}
 
 	return nil
-}
-
-// ViewParams defines a struct to represent the parameters for querying a database view.
-type ViewParams struct {
-	Conflicts       bool   `json:"conflicts,omitempty"`
-	Descending      bool   `json:"descending,omitempty"`
-	EndKey          string `json:"endkey,omitempty"`
-	EndKeyDocID     string `json:"endkey_docid,omitempty"`
-	Group           bool   `json:"group,omitempty"`
-	GroupLevel      int    `json:"group_level,omitempty"`
-	IncludeDocs     bool   `json:"include_docs,omitempty"`
-	Attachments     bool   `json:"attachments,omitempty"`
-	AttEncodingInfo bool   `json:"att_encoding_info,omitempty"`
-	InclusiveEnd    bool   `json:"inclusive_end,omitempty"`
-	Key             string `json:"key,omitempty"`
-	Keys            string `json:"keys,omitempty"`
-	Limit           int    `json:"limit,omitempty"`
-	Reduce          bool   `json:"reduce,omitempty"`
-	Skip            int    `json:"skip,omitempty"`
-	Sorted          bool   `json:"sorted,omitempty"`
-	Stable          bool   `json:"stable,omitempty"`
-	Stale           string `json:"stale,omitempty"`
-	StartKey        string `json:"startkey,omitempty"`
-	StartKeyDocID   string `json:"startkey_docid,omitempty"`
-	Update          string `json:"update,omitempty"`
-	UpdateSeq       bool   `json:"update_seq,omitempty"`
-}
-
-// encode converts ViewParams struct to URL-encoded string
-func (q *ViewParams) encode() string {
-	v := url.Values{}
-	b, _ := json.Marshal(q)
-	_ = json.Unmarshal(b, &v)
-	return v.Encode()
 }
