@@ -275,7 +275,7 @@ type ViewResponse struct {
 //   - design: The design document name.
 //   - view: The name of the view within the design document.
 //   - params: The parameters for the view query as described [here](https://docs.couchdb.org/en/stable/api/ddoc/views.html#db-design-design-doc-view-view-name).
-//   - viewResults: A pointer to a struct where the view results will be unmarshalled.
+//   - resultVar: A pointer to a struct where the view results will be unmarshalled.
 //     The struct must have a "rows" field holding a slice of structs with "id" and "key" JSON fields.
 //     If params.IncludeDocs is true, the struct must also have a "doc" JSON field.
 //
@@ -287,7 +287,7 @@ func (db *Database) View(ctx context.Context, design, view string, params map[st
 		return fmt.Errorf("error checking struct for JSON fields: %w", err)
 	}
 
-	code, responseBytes, err := db.httpClient.Get(ctx, fmt.Sprintf("%s/_design/%s/_view/%s?%s", db.dbName, design, view, "params.encode()"))
+	code, responseBytes, err := db.httpClient.Post(ctx, fmt.Sprintf("%s/_design/%s/_view/%s", db.dbName, design, view), params)
 	if err != nil {
 		return fmt.Errorf("error creating design doc: %w", err)
 	}

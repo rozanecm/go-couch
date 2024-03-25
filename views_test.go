@@ -1,6 +1,8 @@
 package couchdb
 
-import "testing"
+import (
+	"testing"
+)
 
 // Define a test struct for holding test cases
 type testCase struct {
