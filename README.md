@@ -1,4 +1,5 @@
 # go-couch - CouchService Go SDK
+
 <p align="center">
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/rozanecm/go-couch)](https://goreportcard.com/report/github.com/rozanecm/go-couch)
@@ -14,13 +15,14 @@ databases, documents, and design documents using Go programming language.
 
 ⚠️ **Warning: Breaking Changes and Testing Status**
 
-Please note that this project is under active development and testing. As a result, breaking changes may occur between versions. While we strive for stability and reliability, we cannot guarantee error-free execution in all scenarios.
+Please note that this project is under active development and testing. As a result, breaking changes may occur between
+versions. While we strive for stability and reliability, we cannot guarantee error-free execution in all scenarios.
 
-We recommend reviewing the release notes and testing updates in a controlled environment before deploying this project in a production setting.
+We recommend reviewing the release notes and testing updates in a controlled environment before deploying this project
+in a production setting.
 
 Thank you for your understanding and collaboration.
 </div>
-
 
 ## Features
 
@@ -47,15 +49,15 @@ Here are some examples demonstrating how to use the CouchService Go SDK:
 
 ```go
 import (
-	"context"
-	"github.com/rozanecm/go-couch"
+"context"
+"github.com/rozanecm/go-couch"
 )
 
 func main() {
-    baseURL := "http://localhost:5984" // Example CouchDB URL
-    cs := couchservice.GetInstance(baseURL, "username", "password")
-    
-    // Use cs to perform operations like GetDB, CreateDoc, etc.
+baseURL := "http://localhost:5984" // Example CouchDB URL
+cs := couchservice.GetInstance(baseURL, "username", "password")
+
+// Use cs to perform operations like GetDB, CreateDoc, etc.
 }
 ```
 
@@ -68,7 +70,7 @@ createIfNotExist := true
 
 db, err := cs.GetDB(ctx, dbName, createIfNotExist)
 if err != nil {
-    panic(err)
+panic(err)
 }
 ```
 
@@ -77,13 +79,13 @@ if err != nil {
 ```go
 ctx := context.Background()
 docData := map[string]interface{}{
-    "name": "John Doe",
-    "age": 30,
+"name": "John Doe",
+"age": 30,
 }
 
 resp, err := db.CreateDoc(ctx, docData)
 if err != nil {
-    panic(err)
+panic(err)
 }
 
 fmt.Println("Document created successfully with ID:", resp.ID)
@@ -95,14 +97,14 @@ fmt.Println("Document created successfully with ID:", resp.ID)
 ctx := context.Background()
 docID := "document_id"
 updatedData := map[string]interface{}{
-    "_id": docID,
-    "_rev": "current_revision",
-    "key": "new_value",
+"_id": docID,
+"_rev": "current_revision",
+"key": "new_value",
 }
 
 err := db.UpdateDoc(ctx, docID, updatedData)
 if err != nil {
-    panic(err)
+panic(err)
 }
 
 fmt.Println("Document updated successfully")
@@ -134,5 +136,3 @@ Thank you for contributing to make our SDK better!
 Feel free to reach out if you have any questions or need assistance with the SDK.
 
 Happy coding!
-
-```
