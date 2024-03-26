@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"reflect"
 	"regexp"
+	"strings"
 )
 
 var ErrMissingID = errors.New("missing _id field")
@@ -34,9 +35,9 @@ func checkParameter(param interface{}) error {
 		for i := 0; i < fields.NumField(); i++ {
 			field := fields.Field(i)
 			tag := field.Tag.Get("json")
-			if tag == "_id" {
+			if strings.Contains(tag, "_id") {
 				idTagExists = true
-			} else if tag == "_rev" {
+			} else if strings.Contains(tag, "_rev") {
 				revTagExists = true
 			}
 			if idTagExists && revTagExists {

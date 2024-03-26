@@ -28,6 +28,11 @@ type structWithMixedTags struct {
 	Rev string
 }
 
+type structWithOmitEmpty struct {
+	ID  string `json:"_id,omitempty"`
+	Rev string `json:"_rev,omitempty"`
+}
+
 // TestCheckParameter tests the checkParameter function
 func TestCheckParameter(t *testing.T) {
 	tests := []struct {
@@ -79,6 +84,11 @@ func TestCheckParameter(t *testing.T) {
 			name:     "Test nil parameter",
 			param:    nil,
 			expected: errors.New("unsupported type"), // Adjust this expected error message if needed
+		},
+		{
+			name:     "Test structWithOmitEmpty with _id and _rev",
+			param:    structWithOmitEmpty{ID: "123", Rev: "456"},
+			expected: nil,
 		},
 	}
 
