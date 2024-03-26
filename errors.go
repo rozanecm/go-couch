@@ -6,6 +6,6 @@ var (
 	ErrNotFound = errors.New("not found")
 
 	codeToError = map[int]error{
-		400: ErrNotFound,
+		404: ErrNotFound,
 	}
 )
