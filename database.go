@@ -229,7 +229,7 @@ func (db *Database) CreateDesignDoc(ctx context.Context, designDoc string, views
 
 	var prevDoc designDocument
 	err := db.GetDoc(ctx, docID, &prevDoc)
-	if !errors.Is(err, errNotFound) {
+	if !errors.Is(err, ErrNotFound) {
 		body.Rev = prevDoc.Rev
 	}
 

@@ -43,7 +43,7 @@ func GetInstance(baseURL, username, password string) CouchServiceI {
 // If the database exists, it returns a *Database instance initialized with the provided name and a CustomHTTPClient.
 // If the database doesn't exist and createIfItDoesntExist is true, it attempts to create the database using createDB function,
 // then recursively calls itself with createIfItDoesntExist set to false to retrieve the created database.
-// If createIfItDoesntExist is false and the database doesn't exist, it returns errorDBNotFound.
+// If createIfItDoesntExist is false and the database doesn't exist, it returns ErrDBNotFound.
 // It returns an error if there was a problem sending the request or if the response status code is not 200 (OK) or 400 (Bad Request).
 //
 // Parameters:
@@ -70,7 +70,7 @@ func (c *CouchService) GetDB(ctx context.Context, name string, createIfItDoesntE
 				}
 				return c.GetDB(ctx, name, false)
 			}
-			return nil, errorDBNotFound
+			return nil, ErrNotFound
 		}
 		return nil, fmt.Errorf("error getting database: %d - %s", respCode, string(respBody))
 	}

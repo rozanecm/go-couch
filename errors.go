@@ -3,10 +3,9 @@ package couchdb
 import "errors"
 
 var (
-	errorDBNotFound = errors.New("db not found")
-	errNotFound     = errors.New("not found")
+	ErrNotFound = errors.New("not found")
 
 	codeToError = map[int]error{
-		400: errNotFound,
+		400: ErrNotFound,
 	}
 )
