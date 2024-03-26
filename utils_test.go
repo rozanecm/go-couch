@@ -7,10 +7,25 @@ import (
 	"testing"
 )
 
-// Define a struct for testing
-type testStruct struct {
-	_id  string
-	_rev string
+// Define structs for testing
+type structWithTags struct {
+	ID  string `json:"_id"`
+	Rev string `json:"_rev"`
+}
+
+type structWithoutTags struct {
+	ID  string
+	Rev string
+}
+
+type structWithEmptyTags struct {
+	ID  string `json:""`
+	Rev string `json:""`
+}
+
+type structWithMixedTags struct {
+	ID  string `json:"_id"`
+	Rev string
 }
 
 // TestCheckParameter tests the checkParameter function
@@ -36,14 +51,34 @@ func TestCheckParameter(t *testing.T) {
 			expected: ErrMissingRev,
 		},
 		{
-			name:     "Test struct{} with _id and _rev",
-			param:    testStruct{_id: "123", _rev: "456"},
+			name:     "Test structWithTags with _id and _rev",
+			param:    structWithTags{ID: "123", Rev: "456"},
 			expected: nil,
+		},
+		{
+			name:     "Test structWithoutTags without _id and _rev",
+			param:    structWithoutTags{},
+			expected: ErrMissingID,
+		},
+		{
+			name:     "Test structWithEmptyTags with empty _id and _rev",
+			param:    structWithEmptyTags{},
+			expected: ErrMissingID,
+		},
+		{
+			name:     "Test structWithMixedTags with _id and without _rev",
+			param:    structWithMixedTags{ID: "123"},
+			expected: ErrMissingRev,
 		},
 		{
 			name:     "Test unsupported type",
 			param:    123,
 			expected: errors.New("unsupported type"),
+		},
+		{
+			name:     "Test nil parameter",
+			param:    nil,
+			expected: errors.New("unsupported type"), // Adjust this expected error message if needed
 		},
 	}
 
@@ -56,7 +91,6 @@ func TestCheckParameter(t *testing.T) {
 		})
 	}
 }
-
 func TestIsValidDBName(t *testing.T) {
 	testCases := []struct {
 		name     string

@@ -15,7 +15,10 @@ var ErrMissingRev = errors.New("missing _rev field")
 // checkParameter checks if the parameter is a struct or a map[string]interface{}
 // and if it contains the fields "_id" and "_rev". It returns custom errors for each missing field.
 func checkParameter(param interface{}) error {
-	switch reflect.TypeOf(param).Kind() {
+	value := reflect.ValueOf(param)
+	kind := value.Kind()
+
+	switch kind {
 	case reflect.Map:
 		paramMap := param.(map[string]interface{})
 		if _, ok := paramMap["_id"]; !ok {
@@ -26,13 +29,24 @@ func checkParameter(param interface{}) error {
 		}
 		return nil
 	case reflect.Struct:
-		fields := reflect.TypeOf(param)
-		_, idExist := fields.FieldByName("_id")
-		_, revExist := fields.FieldByName("_rev")
-		if !idExist {
+		fields := value.Type()
+		idTagExists, revTagExists := false, false
+		for i := 0; i < fields.NumField(); i++ {
+			field := fields.Field(i)
+			tag := field.Tag.Get("json")
+			if tag == "_id" {
+				idTagExists = true
+			} else if tag == "_rev" {
+				revTagExists = true
+			}
+			if idTagExists && revTagExists {
+				break
+			}
+		}
+		if !idTagExists {
 			return ErrMissingID
 		}
-		if !revExist {
+		if !revTagExists {
 			return ErrMissingRev
 		}
 		return nil
