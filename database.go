@@ -13,6 +13,11 @@ type Database struct {
 	dbName     string
 }
 
+type Document struct {
+	ID  string `json:"_id,omitempty"`
+	Rev string `json:"_rev,omitempty"`
+}
+
 // CreateDoc creates a new document in the database.
 //
 // This function sends an HTTP POST request to create a new document in the database with the provided context and document data.

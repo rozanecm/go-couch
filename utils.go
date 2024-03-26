@@ -7,11 +7,11 @@ import (
 	"net/url"
 	"reflect"
 	"regexp"
-	"strings"
 )
 
 var ErrMissingID = errors.New("missing _id field")
 var ErrMissingRev = errors.New("missing _rev field")
+var ErrMissingDocumentFields = errors.New("missing document fields")
 
 // checkParameter checks if the parameter is a struct or a map[string]interface{}
 // and if it contains the fields "_id" and "_rev". It returns custom errors for each missing field.
@@ -30,27 +30,17 @@ func checkParameter(param interface{}) error {
 		}
 		return nil
 	case reflect.Struct:
-		fields := value.Type()
-		idTagExists, revTagExists := false, false
-		for i := 0; i < fields.NumField(); i++ {
-			field := fields.Field(i)
-			tag := field.Tag.Get("json")
-			if strings.Contains(tag, "_id") {
-				idTagExists = true
-			} else if strings.Contains(tag, "_rev") {
-				revTagExists = true
-			}
-			if idTagExists && revTagExists {
-				break
+		// Iterate over fields of the struct and check if Document is embedded
+		docType := reflect.TypeOf(Document{})
+		baseType := value.Type()
+		for i := 0; i < baseType.NumField(); i++ {
+			field := baseType.Field(i)
+			if field.Type == docType && field.Anonymous {
+				return nil // Document is embedded
 			}
 		}
-		if !idTagExists {
-			return ErrMissingID
-		}
-		if !revTagExists {
-			return ErrMissingRev
-		}
-		return nil
+
+		return ErrMissingDocumentFields // Document is not embedded
 	default:
 		return errors.New("unsupported type")
 	}

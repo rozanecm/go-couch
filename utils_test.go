@@ -7,30 +7,10 @@ import (
 	"testing"
 )
 
-// Define structs for testing
-type structWithTags struct {
-	ID  string `json:"_id"`
-	Rev string `json:"_rev"`
-}
-
-type structWithoutTags struct {
-	ID  string
-	Rev string
-}
-
-type structWithEmptyTags struct {
-	ID  string `json:""`
-	Rev string `json:""`
-}
-
-type structWithMixedTags struct {
-	ID  string `json:"_id"`
-	Rev string
-}
-
-type structWithOmitEmpty struct {
-	ID  string `json:"_id,omitempty"`
-	Rev string `json:"_rev,omitempty"`
+// Base struct embedding Document
+type Base struct {
+	Document // Embedded Document struct
+	Name     string
 }
 
 // TestCheckParameter tests the checkParameter function
@@ -56,24 +36,9 @@ func TestCheckParameter(t *testing.T) {
 			expected: ErrMissingRev,
 		},
 		{
-			name:     "Test structWithTags with _id and _rev",
-			param:    structWithTags{ID: "123", Rev: "456"},
+			name:     "Test struct with embedded doc",
+			param:    Base{Document: Document{ID: "123", Rev: "456"}},
 			expected: nil,
-		},
-		{
-			name:     "Test structWithoutTags without _id and _rev",
-			param:    structWithoutTags{},
-			expected: ErrMissingID,
-		},
-		{
-			name:     "Test structWithEmptyTags with empty _id and _rev",
-			param:    structWithEmptyTags{},
-			expected: ErrMissingID,
-		},
-		{
-			name:     "Test structWithMixedTags with _id and without _rev",
-			param:    structWithMixedTags{ID: "123"},
-			expected: ErrMissingRev,
 		},
 		{
 			name:     "Test unsupported type",
@@ -84,11 +49,6 @@ func TestCheckParameter(t *testing.T) {
 			name:     "Test nil parameter",
 			param:    nil,
 			expected: errors.New("unsupported type"), // Adjust this expected error message if needed
-		},
-		{
-			name:     "Test structWithOmitEmpty with _id and _rev",
-			param:    structWithOmitEmpty{ID: "123", Rev: "456"},
-			expected: nil,
 		},
 	}
 
@@ -101,6 +61,7 @@ func TestCheckParameter(t *testing.T) {
 		})
 	}
 }
+
 func TestIsValidDBName(t *testing.T) {
 	testCases := []struct {
 		name     string
