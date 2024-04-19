@@ -41,6 +41,11 @@ func TestCheckParameter(t *testing.T) {
 			expected: nil,
 		},
 		{
+			name:     "Test struct with embedded doc",
+			param:    &Base{Document: Document{ID: "123", Rev: "456"}},
+			expected: nil,
+		},
+		{
 			name:     "Test unsupported type",
 			param:    123,
 			expected: errors.New("unsupported type"),

@@ -19,9 +19,18 @@ func checkParameter(param interface{}) error {
 	value := reflect.ValueOf(param)
 	kind := value.Kind()
 
+	// Dereference pointers if necessary
+	if kind == reflect.Ptr {
+		value = value.Elem()
+		kind = value.Kind()
+	}
+
 	switch kind {
 	case reflect.Map:
-		paramMap := param.(map[string]interface{})
+		paramMap, ok := param.(map[string]interface{})
+		if !ok {
+			return errors.New("parameter is not a map[string]interface{}")
+		}
 		if _, ok := paramMap["_id"]; !ok {
 			return ErrMissingID
 		}
