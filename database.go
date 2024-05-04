@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"reflect"
 )
 
@@ -340,4 +341,22 @@ func checkStructForJSONFields(resultVar interface{}) error {
 	}
 
 	return nil
+}
+
+func (db *Database) DocExists(ctx context.Context, docID string) (bool, error) {
+	code, responseBody, err := db.httpClient.Head(ctx, fmt.Sprintf("%s/%s", db.dbName, docID))
+	if err != nil {
+		return false, fmt.Errorf("error sending HEAD request: %w", err)
+	}
+
+	switch code {
+	case http.StatusOK:
+		return true, nil
+	case http.StatusNotModified:
+		return true, nil // Document exists but wasn't modified
+	case http.StatusNotFound:
+		return false, nil // Document doesn't exist
+	default:
+		return false, fmt.Errorf("unexpected response status code: %d. %s", code, string(responseBody))
+	}
 }
